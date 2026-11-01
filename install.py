@@ -251,6 +251,10 @@ Alternatively, run without activating:
 
 def main() -> int:
     """Main installation routine."""
+    if "com.termux" in os.environ.get("PREFIX", "") or os.path.exists("/data/data/com.termux"):
+        print("Skipping playwright browser download on Termux. Using system chromium instead.")
+        return 0
+
     print_header("Zefoy-CLI Auto-Installer")
     print(f"Platform: {platform.system()} {platform.machine()}")
     print(f"Python: {sys.version}")
