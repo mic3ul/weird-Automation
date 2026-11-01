@@ -4,10 +4,9 @@ from __future__ import annotations
 import asyncio
 import io
 import re
-from typing import TYPE_CHECKING
+from typing import Any
 
-if TYPE_CHECKING:
-    from playwright.async_api import Page
+Page = Any
 
 # Lazy imports for optional dependencies
 _easyocr_reader = None
