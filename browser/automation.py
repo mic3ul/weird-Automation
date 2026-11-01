@@ -12,12 +12,13 @@ Copyright (c) 2024 zebbern
 from __future__ import annotations
 
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, AsyncGenerator
+from typing import Any, AsyncGenerator
 
-if TYPE_CHECKING:
-    from playwright.async_api import Page, Browser, BrowserContext
+from browser_launcher import IS_TERMUX, create_browser_context, get_async_playwright
 
-from playwright.async_api import async_playwright
+Page = Any
+Browser = Any
+BrowserContext = Any
 from browser.popup_handlers import PopupHandlers
 from browser.captcha_solver import CaptchaSolver
 from services.hearts import HeartsService
@@ -80,7 +81,7 @@ class ZefoyAutomation:
     
     def __init__(self, headless: bool = False, verbose: bool = False, proxy: str | None = None) -> None:
         """Initialize the automation controller."""
-        self.headless = headless
+        self.headless = True if IS_TERMUX else headless
         self.verbose = verbose
         self.proxy = proxy
         self.browser: Browser | None = None
@@ -89,30 +90,16 @@ class ZefoyAutomation:
         self.popup_handlers: PopupHandlers | None = None
         self.captcha_solver: CaptchaSolver | None = None
         self._playwright = None
+        self._playwright_manager = None
         self._available_services: dict[str, bool] = {}
         self._selectable_services: list[str] = []  # Ordered list for selection
     
     async def start(self) -> None:
         """Start the browser and navigate to zefoy."""
-        self._playwright = await async_playwright().start()
-        
-        # Use Firefox for SOCKS5 proxy with auth, Chromium otherwise
-        if self.proxy and 'socks' in self.proxy.lower():
-            self.browser = await self._playwright.firefox.launch(
-                headless=self.headless
-            )
-        else:
-            # Stealth options to avoid bot detection (Chromium only)
-            self.browser = await self._playwright.chromium.launch(
-                headless=self.headless,
-                args=[
-                    '--disable-blink-features=AutomationControlled',
-                    '--disable-infobars',
-                    '--no-first-run',
-                ]
-            )
-        
-        # Use realistic context settings
+        self._playwright_manager = get_async_playwright()
+        self._playwright = await self._playwright_manager.start()
+
+        # Use Chromium on Termux; desktop keeps the existing Firefox SOCKS option.
         context_options = {
             'viewport': {'width': 1280, 'height': 720},
             'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
@@ -134,7 +121,20 @@ class ZefoyAutomation:
             else:
                 context_options['proxy'] = {'server': self.proxy}
         
-        self.context = await self.browser.new_context(**context_options)
+        if self.proxy and 'socks' in self.proxy.lower() and not IS_TERMUX:
+            self.browser = await self._playwright.firefox.launch(headless=self.headless)
+            self.context = await self.browser.new_context(**context_options)
+        else:
+            self.browser, self.context = await create_browser_context(
+                self._playwright,
+                headless=self.headless,
+                context_kwargs=context_options,
+                args=[
+                    '--disable-blink-features=AutomationControlled',
+                    '--disable-infobars',
+                    '--no-first-run',
+                ],
+            )
         
         # Cookie rotation: Clear any existing cookies for fresh session
         await self.context.clear_cookies()
@@ -337,8 +337,8 @@ class ZefoyAutomation:
         try:
             if self.browser:
                 await self.browser.close()
-            if self._playwright:
-                await self._playwright.stop()
+            if self._playwright_manager:
+                await self._playwright_manager.stop()
         except Exception:
             pass
 
