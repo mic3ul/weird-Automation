@@ -14,6 +14,7 @@ import asyncio
 import sys
 import warnings
 from browser.automation import ZefoyAutomation, SERVICES, create_automation
+from browser_launcher import IS_TERMUX, create_browser_context, get_async_playwright
 from utils.timer import wait_with_progress
 from utils.health_check import check_site_status
 from utils.colors import success, error, warning, info, dim, bold, Colors
@@ -113,11 +114,8 @@ def fetch_video_stats(url: str) -> VideoStats | None:
 
 async def clear_cookies_standalone() -> None:
     """Clear Playwright browser cookies for zefoy.com."""
-    from playwright.async_api import async_playwright
-    
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
-        context = await browser.new_context()
+    async with get_async_playwright() as p:
+        browser, context = await create_browser_context(p, headless=True)
         # Navigate to set up cookies
         page = await context.new_page()
         try:
@@ -319,6 +317,10 @@ async def run_automation(
 
 def main() -> None:
     """Main CLI entry point."""
+    if IS_TERMUX:
+        print("[Termux] Running in single-process mode to prevent Android OOM killer.")
+        print("[Termux] Tip: run 'termux-wake-lock' in another terminal to prevent sleep.")
+
     parser = argparse.ArgumentParser(
         description="Zefoy CLI - Automate TikTok engagement services",
         formatter_class=argparse.RawDescriptionHelpFormatter,
