@@ -13,10 +13,9 @@ from __future__ import annotations
 
 import re
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING
+from typing import Any
 
-if TYPE_CHECKING:
-    from playwright.async_api import Page
+Page = Any
 
 from utils.timer import parse_wait_time
 from utils.colors import dim
