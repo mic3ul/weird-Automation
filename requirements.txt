@@ -21,6 +21,7 @@ pycryptodome>=3.20.0
 # TUI (Terminal User Interface)
 # Note: Using 0.89.1 for stability (7.x has breaking changes)
 textual>=0.89.0,<1.0.0
+rich>=13.0.0
 
 # Development/Testing dependencies
 pytest>=7.0.0
