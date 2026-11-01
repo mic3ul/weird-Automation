@@ -251,6 +251,17 @@ Alternatively, run without activating:
 
 def main() -> int:
     """Main installation routine."""
+    if os.environ.get("PREFIX", "").startswith("/data/data/com.termux"):
+        print_header("Termux compatibility check")
+        print_warning("The desktop browser installer is not a validated Android/Termux setup.")
+        print_warning("Skipping dependency installation and browser downloads on Termux.")
+        checker = Path(__file__).parent / "termux_check.py"
+        if checker.exists():
+            result = subprocess.run([sys.executable, str(checker)], check=False)
+            return result.returncode
+        print_error("termux_check.py is missing; run the diagnostic manually after restoring the file.")
+        return 1
+
     print_header("Zefoy-CLI Auto-Installer")
     print(f"Platform: {platform.system()} {platform.machine()}")
     print(f"Python: {sys.version}")
