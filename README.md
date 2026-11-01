@@ -67,6 +67,18 @@
 
 ---
 
+## Android / Termux status
+
+Termux is **not a supported runtime for the browser automation in this repository**. Playwright browser installation on Android is not guaranteed, and a successful Python package install does not prove that Chromium can launch. The Termux work on this branch is limited to read-only environment diagnostics; it does not enable third-party engagement automation, CAPTCHA solving, fingerprint spoofing, or bypassing service restrictions.
+
+Run the diagnostic from the repository directory:
+
+```bash
+python termux_check.py
+```
+
+On Termux, `python install.py` intentionally stops after the diagnostic instead of downloading desktop browser binaries or attempting an unverified setup.
+
 ## Quick Start
 
 ### Installation
