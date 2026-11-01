@@ -76,7 +76,7 @@
 git clone https://github.com/zebbern/Zefoy-Automation.git
 cd Zefoy-Automation
 
-# Auto-install (creates venv, installs deps, playwright)
+# Auto-install (creates venv and installs Python dependencies)
 python install.py
 ```
 
@@ -240,9 +240,6 @@ source .venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
-
-# Install browser
-playwright install chromium
 ```
 
 </details>
@@ -255,10 +252,9 @@ playwright install chromium
 - Use `--verbose` to see OCR output
 - Some CAPTCHAs need manual solving
 
-**Browser not installed:**
-```bash
-playwright install chromium
-```
+**Browser not available:**
+- On Termux, install the system browser with `pkg install chromium`.
+- On desktop, make sure a Chromium browser supported by your Playwright runtime is installed.
 
 **Rate limited immediately:**
 - Clear cookies: `--clear-cookies`
@@ -331,7 +327,7 @@ pytest  # Run tests
 
 | Package | Purpose |
 |---------|---------|
-| `playwright` | Browser automation |
+| `amv-playwright` | Cross-platform browser automation (Termux + desktop) |
 | `textual` | Terminal UI framework |
 | `easyocr` | OCR for CAPTCHA |
 | `pyenchant` | Spell correction |
