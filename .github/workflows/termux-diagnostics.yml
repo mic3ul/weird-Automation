@@ -1,0 +1,41 @@
+name: Termux diagnostics
+
+on:
+  push:
+    branches:
+      - termux-preflight
+    paths:
+      - "termux_check.py"
+      - "tests/test_termux_check.py"
+      - ".github/workflows/termux-diagnostics.yml"
+  pull_request:
+    branches:
+      - termux-preflight
+    paths:
+      - "termux_check.py"
+      - "tests/test_termux_check.py"
+      - ".github/workflows/termux-diagnostics.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnostics-tests:
+    name: Python ${{ matrix.python-version }} diagnostics tests
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install test runner
+        run: python -m pip install --upgrade pytest
+      - name: Run read-only Termux diagnostics tests
+        run: python -m pytest -q tests/test_termux_check.py
