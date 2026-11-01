@@ -684,9 +684,10 @@ class RunningScreen(Screen):
     }
     """
     
-    BINDINGS = [
-        Binding("q", "quit_automation", "Quit"),
-    ]
+    # Do not bind a single letter here: on Android/Termux soft keyboards
+    # can emit stray character events while selecting ListView items.
+    # The application-level Ctrl+Q binding remains the explicit quit shortcut.
+    BINDINGS = []
     
     def __init__(self) -> None:
         super().__init__()
@@ -1102,7 +1103,7 @@ class RunningScreen(Screen):
                 self.app.exit()
             else:
                 try:
-                    self.write_log("[dim]Press Q to quit[/]")
+                    self.write_log("[dim]Press Ctrl+Q to quit[/]")
                 except Exception:
                     pass  # App is exiting
 
@@ -1148,7 +1149,7 @@ class ZefoyTUI(App):
         else:
             # First Ctrl+C - show notification
             self._ctrl_c_pressed = True
-            self.notify("Press 'q' to quit properly, or Ctrl+C again to force exit", severity="warning", timeout=5)
+            self.notify("Press Ctrl+Q to quit properly, or Ctrl+C again to force exit", severity="warning", timeout=5)
             # Reset after 3 seconds
             self.set_timer(3.0, self._reset_ctrl_c)
     
