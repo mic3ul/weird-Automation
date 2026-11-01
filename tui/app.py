@@ -13,7 +13,12 @@ from __future__ import annotations
 
 import asyncio
 import warnings
+import os
+import subprocess
+import tempfile
 from typing import TYPE_CHECKING
+
+from browser_launcher import IS_TERMUX
 
 # Suppress asyncio unclosed transport warnings on exit
 warnings.filterwarnings("ignore", category=ResourceWarning, message=".*unclosed transport.*")
@@ -952,7 +957,25 @@ class RunningScreen(Screen):
                     else:
                         self.write_log("[yellow]Auto-solve failed - solve manually[/]")
                         self.set_state("Waiting for CAPTCHA...")
-                        await automation.solve_captcha_manual()
+                        if IS_TERMUX:
+                            # Headless Android has no browser window: open a CAPTCHA screenshot
+                            # externally and collect the answer in the terminal.
+                            captcha_path = os.path.join(tempfile.gettempdir(), "zefoy-captcha.png")
+                            captcha_image = automation.page.locator("img.img-thumbnail.card-img-top")
+                            await captcha_image.screenshot(path=captcha_path)
+                            try:
+                                subprocess.Popen(["termux-open", captcha_path])
+                            except Exception as open_error:
+                                self.write_log(f"[yellow]Could not open CAPTCHA image automatically: {open_error}[/]")
+                                self.write_log(f"[dim]Image saved at: {captcha_path}[/]")
+                            answer = await asyncio.to_thread(input, "Enter CAPTCHA text: ")
+                            if not await automation.captcha_solver.enter_solution(answer.strip()):
+                                raise RuntimeError("Could not enter CAPTCHA answer")
+                            await automation.captcha_solver.submit_captcha()
+                            if not await automation.wait_for_captcha_solved(timeout=60):
+                                raise RuntimeError("CAPTCHA was not accepted")
+                        else:
+                            await automation.solve_captcha_manual()
                         self.write_log("[green]CAPTCHA solved![/]")
                 
                 # Detect services
