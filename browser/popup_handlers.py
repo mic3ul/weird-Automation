@@ -1,5 +1,8 @@
 """Handlers for various popups and dialogs on zefoy.com."""
-from playwright.async_api import Page, Dialog
+from typing import Any
+
+Page = Any
+Dialog = Any
 from browser.js_injections import (
     REMOVE_AD_OVERLAYS,
     CLOSE_MOBILE_POPUP,
