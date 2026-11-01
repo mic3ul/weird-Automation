@@ -11,6 +11,20 @@ Copyright (c) 2024 zebbern
 """
 from __future__ import annotations
 
+def _debug_log(message: str) -> None:
+    """Write persistent diagnostics outside the terminal UI."""
+    try:
+        import datetime
+        from pathlib import Path
+        log_dir = Path.home() / ".zefoy"
+        log_dir.mkdir(parents=True, exist_ok=True)
+        with (log_dir / "tui-debug.log").open("a", encoding="utf-8") as log:
+            stamp = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
+            log.write(f"[{stamp}] {message}\\n")
+    except Exception:
+        pass
+
+
 import asyncio
 import warnings
 import os
@@ -1165,7 +1179,19 @@ def run_tui() -> None:
     import subprocess
     
     app = ZefoyTUI()
-    app.run()
+    _debug_log("run_tui: entering app.run()")
+    try:
+        app.run()
+        _debug_log("run_tui: app.run() returned normally")
+    except BaseException as exc:
+        import traceback
+        _debug_log(
+            "run_tui: app.run() raised "
+            + repr(exc)
+            + "\\n"
+            + traceback.format_exc()
+        )
+        raise
     
     # Reset terminal after exit to clean up escape codes and disable mouse tracking
     if sys.platform == "win32":
