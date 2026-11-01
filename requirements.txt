@@ -2,7 +2,8 @@
 # Install with: pip install -r requirements.txt
 
 # Core - Browser automation
-playwright>=1.40.0
+amv-playwright>=1.82.0
+python-dotenv>=1.0.0
 
 # OCR for CAPTCHA solving
 easyocr>=1.7.0
