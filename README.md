@@ -95,6 +95,29 @@ python main.py --auto-captcha "YOUR_TIKTOK_URL"
 
 ---
 
+
+
+## Termux / Android Setup
+
+The Termux path uses `amv-playwright` with the system Chromium package. On Android, the browser is forced into headless single-process mode to reduce process pressure.
+
+```bash
+pkg install -y x11-repo chromium nodejs python python-greenlet procps termux-api which
+pip install amv-playwright textual python-dotenv requests
+pip install -r requirements.txt
+termux-wake-lock
+python tui_main.py
+```
+
+Optionally create a `.env` file in the project root:
+
+```dotenv
+PLAYWRIGHT_BROWSERS_PATH=0
+CHROMIUM_PATH=/data/data/com.termux/files/usr/bin/chromium-browser
+```
+
+You can copy `.env.example` as a starting point. Keep `termux-wake-lock` active while a long session is running, and use `termux-wake-unlock` when finished.
+
 ## Terminal UI
 
 <div align="center">
