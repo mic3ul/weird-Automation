@@ -1,23 +1,26 @@
 # Android / Termux diagnostics
 
-## Scope
+## Support status
 
-This repository's Termux support is limited to a read-only environment check.
-It does **not** make the Zefoy/TikTok interaction automation, browser workflow,
-CAPTCHA handling, or anti-detection code supported on Android. Do not run
-`main.py`, `tui_main.py`, or the desktop installer expecting the automation
-to work in Termux.
+This branch supports **environment diagnostics only** on Android / Termux. It does
+not establish that the repository's third-party browser workflow is compatible
+with Android, and it does not provide a supported way to automate engagement
+on a TikTok account.
+
+Do not run `main.py`, `tui_main.py`, or `install.py` on a personal account
+as a compatibility test. The diagnostic passing is not a go-ahead to run the
+engagement workflow.
 
 ## Prepare Termux
 
-Install Python and Git from the Termux package manager:
+Install only the tools needed for the read-only diagnostic:
 
 ```sh
 pkg update
 pkg install python git
 ```
 
-Clone the repository and enter its directory:
+Clone the repository and enter the diagnostics branch:
 
 ```sh
 git clone https://github.com/mic3ul/weird-Automation.git
@@ -25,27 +28,42 @@ cd weird-Automation
 git switch termux-preflight
 ```
 
-Run the read-only diagnostic:
+Run the diagnostic:
 
 ```sh
 python termux_check.py
 ```
 
-The script checks the Termux environment, Python version, CPU architecture,
-pip, selected Python packages, Git, and the home directory. It makes no network
-requests and does not launch a browser.
+The script checks the Termux environment, Python version (3.10+), CPU
+architecture, pip, optional package presence, Git, and the home directory.
+It makes no network requests, installs no packages, and does not launch a
+browser.
 
 ## Interpreting the result
 
-- A successful result means only that the basic environment checks passed.
-- It does **not** prove that Playwright or Chromium can run on this Android
-  device.
-- A missing Playwright package is informational; installing it will not by
-  itself provide a compatible browser runtime.
-- If a check fails, share the complete terminal output for diagnosis.
+- `[OK]` means that a local environment check passed.
+- `[INFO]` for Requests or Playwright means the package is absent; neither is
+  required to run this diagnostic.
+- ARM64 recognition does not prove that a compatible Chromium/browser runtime
+  exists.
+- Installing the Playwright Python package alone does not install or validate
+  a working Android browser runtime.
+- A successful diagnostic is not evidence that third-party automation works.
 
-## Tests
+If a diagnostic check fails, share the complete terminal output for analysis.
+Do not share account passwords, session cookies, authentication tokens, or
+private browser profiles.
 
-The diagnostic unit tests are run automatically by GitHub Actions for Python
-3.10, 3.11, and 3.12 when relevant files change. They test environment-detection
-logic only; they do not test browser compatibility or third-party automation.
+## Automated tests
+
+GitHub Actions runs the read-only unit tests against Python 3.10, 3.11, 3.12,
+3.13, and 3.14 when the relevant files change on this branch. These tests cover
+environment-detection logic only. They do not run Android, launch Chromium,
+connect to TikTok, or test engagement automation.
+
+## Safe next validation
+
+The next useful Termux validation is limited to confirming that the diagnostic
+and its unit tests behave consistently on the device. Browser compatibility
+must be assessed separately in a controlled environment that you own or are
+authorized to test; do not use a personal social-media account as a test target.
