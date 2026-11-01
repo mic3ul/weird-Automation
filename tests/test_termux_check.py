@@ -1,5 +1,9 @@
 """Unit tests for the read-only Termux diagnostics."""
-from termux_check import is_supported_architecture, is_termux_environment
+from termux_check import (
+    is_supported_architecture,
+    is_supported_python_version,
+    is_termux_environment,
+)
 
 
 def test_detects_termux_prefix():
@@ -21,3 +25,9 @@ def test_accepts_arm64_architecture_names():
 
 def test_rejects_unvalidated_architecture():
     assert not is_supported_architecture("x86_64")
+
+
+def test_python_version_baseline():
+    assert not is_supported_python_version((3, 9))
+    assert is_supported_python_version((3, 10))
+    assert is_supported_python_version((3, 14))
