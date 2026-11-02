@@ -608,6 +608,7 @@ class ServiceScreen(Screen):
     @on(ListView.Selected)
     def on_service_selected(self, event: ListView.Selected) -> None:
         if isinstance(event.item, ServiceItem):
+            _debug_log(f"ServiceScreen: selected service={event.item.service_key!r}")
             self.app.selected_service = event.item.service_key
             # Go directly to running screen - auto-start
             self.app.push_screen("running")
@@ -777,6 +778,7 @@ class RunningScreen(Screen):
         yield Footer()
     
     def on_mount(self) -> None:
+        _debug_log(f"RunningScreen: on_mount service={self.app.selected_service!r}")
         # Update service name now that we're mounted
         self.query_one("#service-val", Label).update(self.app.selected_service.capitalize())
         # Fetch and display initial stats
@@ -910,6 +912,7 @@ class RunningScreen(Screen):
     @work(exclusive=True)
     async def run_automation(self) -> None:
         """Run the full automation workflow."""
+        _debug_log("RunningScreen.run_automation: started")
         from browser.automation import create_automation
         from utils.health_check import check_site_status
         from utils.config import get_config
@@ -925,6 +928,7 @@ class RunningScreen(Screen):
             # Check site
             self.write_log("[cyan]Checking zefoy.com status...[/]")
             is_up, message = check_site_status()
+            _debug_log(f"RunningScreen.run_automation: site check completed is_up={is_up}; message={message!r}")
             if not is_up:
                 self.write_log(f"[red]{message}[/]")
                 self.set_state("Site Down")
@@ -1110,6 +1114,10 @@ class RunningScreen(Screen):
                 pass  # App is exiting
         
         finally:
+            _debug_log(
+                "RunningScreen.run_automation: finally "
+                f"should_exit={self._should_exit}, running={self._running}, banned={self._banned}"
+            )
             self._running = False
             if self._should_exit:
                 # Give a small delay for cleanup messages
@@ -1152,6 +1160,19 @@ class ZefoyTUI(App):
         self.selected_service: str = ""
         self._ctrl_c_pressed: bool = False
     
+    def exit(self, *args, **kwargs):
+        """Record who requested application shutdown before delegating to Textual."""
+        import traceback
+        try:
+            active_screen = type(self.screen).__name__
+        except Exception:
+            active_screen = "unknown"
+        stack = "".join(traceback.format_stack(limit=16))
+        _debug_log(
+            f"ZefoyTUI.exit invoked; active_screen={active_screen}\\n{stack}"
+        )
+        return super().exit(*args, **kwargs)
+
     def on_mount(self) -> None:
         self.push_screen("welcome")
     
