@@ -20,7 +20,7 @@ def _debug_log(message: str) -> None:
         log_dir.mkdir(parents=True, exist_ok=True)
         with (log_dir / "tui-debug.log").open("a", encoding="utf-8") as log:
             stamp = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
-            log.write(f"[{stamp}] {message}\\n")
+            log.write(f"[{stamp}] {message}\n")
     except Exception:
         pass
 
@@ -1169,7 +1169,7 @@ class ZefoyTUI(App):
             active_screen = "unknown"
         stack = "".join(traceback.format_stack(limit=16))
         _debug_log(
-            f"ZefoyTUI.exit invoked; active_screen={active_screen}\\n{stack}"
+            f"ZefoyTUI.exit invoked; active_screen={active_screen}\n{stack}"
         )
         return super().exit(*args, **kwargs)
 
